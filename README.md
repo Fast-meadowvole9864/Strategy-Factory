@@ -1,6 +1,6 @@
-# Quant Engine Public Core
+# Strategy Factory Public Core
 
-Quant Engine Public Core is a modular quantitative research engine focused on robust validation rather than naive backtest maximization. It is built around walk-forward optimization, transfer validation, holdout discipline, and permutation testing.
+Strategy Factory Public Core is a modular quantitative research engine focused on robust validation rather than naive backtest maximization. It is built around walk-forward optimization, transfer validation, holdout discipline, and permutation testing.
 
 This public repo is meant to teach and demonstrate the methodology and architecture. It does not include private research outputs, private data, or private strategy families.
 
