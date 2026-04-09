@@ -1,4 +1,4 @@
-# Quant Engine Public Core Manual
+# Strategy Factory Public Core Manual
 
 This manual is the operator-facing command reference for the public-core repo.
 
