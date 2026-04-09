@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quant Engine | Leaderboard Dashboard</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+    <style>
+        body { background-color: #111827; color: #f3f4f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .dataTables_wrapper .dataTables_length, .dataTables_wrapper .dataTables_filter, 
+        .dataTables_wrapper .dataTables_info, .dataTables_wrapper .dataTables_processing, 
+        .dataTables_wrapper .dataTables_paginate { color: #9ca3af; margin-bottom: 15px; }
+        table.dataTable tbody tr { background-color: #1f2937; border-bottom: 1px solid #374151; }
+        table.dataTable tbody tr:hover { background-color: #374151; }
+        table.dataTable thead th { background-color: #111827; border-bottom: 2px solid #3b82f6; color: #e5e7eb; }
+        .dataTables_wrapper .dataTables_filter input { background-color: #374151; color: white; border: 1px solid #4b5563; border-radius: 4px; padding: 4px 8px; }
+        .dataTables_wrapper .dataTables_length select { background-color: #374151; color: white; border: 1px solid #4b5563; border-radius: 4px; }
+        table.dataTable td.dataTables_empty { background-color: #1f2937; color: #9ca3af; }
+        .hidden-col { display: none; }
+    </style>
+</head>
+<body class="p-8">
+
+    <div class="max-w-7xl mx-auto">
+        <div class="flex justify-between items-end mb-8">
+            <div>
+                <h1 class="text-3xl font-bold text-blue-500 mb-2">🏆 Quant Engine Dashboard</h1>
+                <p class="text-gray-400">Drop LEADERBOARD.md or WFO_LEADERBOARD.md below to parse the data.</p>
+            </div>
+            
+            <div class="bg-gray-800 p-4 rounded-lg border border-gray-700 shadow-lg">
+                <input type="file" id="mdFileInput" accept=".md" class="block w-full text-sm text-gray-400
+                    file:mr-4 file:py-2 file:px-4
+                    file:rounded-md file:border-0
+                    file:text-sm file:font-semibold
+                    file:bg-blue-600 file:text-white
+                    hover:file:bg-blue-700 cursor-pointer
+                "/>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-5 gap-4 mb-6 bg-gray-800 p-4 rounded-lg border border-gray-700 hidden" id="filterControls">
+            <div>
+                <label class="block text-xs text-gray-400 uppercase tracking-wider mb-1">Timeframe</label>
+                <select id="filterTimeframe" class="w-full bg-gray-700 border border-gray-600 rounded p-2 text-white text-sm">
+                    <option value="">All Timeframes</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs text-gray-400 uppercase tracking-wider mb-1">Base Cartridge</label>
+                <select id="filterBase" class="w-full bg-gray-700 border border-gray-600 rounded p-2 text-white text-sm">
+                    <option value="">All Bases</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs text-gray-400 uppercase tracking-wider mb-1">Contains Cartridge</label>
+                <select id="filterContains" class="w-full bg-gray-700 border border-gray-600 rounded p-2 text-white text-sm">
+                    <option value="">All Cartridges</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs text-gray-400 uppercase tracking-wider mb-1">Indicator Count</label>
+                <select id="filterCount" class="w-full bg-gray-700 border border-gray-600 rounded p-2 text-white text-sm">
+                    <option value="">All Sizes</option>
+                    <option value="1">1 Cartridge</option>
+                    <option value="2">2 Cartridges</option>
+                    <option value="3">3 Cartridges</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs text-gray-400 uppercase tracking-wider mb-1">Optimization Mode</label>
+                <select id="filterMode" class="w-full bg-gray-700 border border-gray-600 rounded p-2 text-white text-sm">
+                    <option value="">All Modes</option>
+                </select>
+            </div>
+            
+            <div class="col-span-5 flex items-center pt-2 border-t border-gray-700 mt-2">
+                <input type="checkbox" id="filterMagRatio" class="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded cursor-pointer" checked>
+                <label for="filterMagRatio" class="ml-2 text-sm font-medium text-gray-300 cursor-pointer">Hide 'Mag Ratio' (Magnitude-Only Fusions)</label>
+            </div>
+        </div>
+
+        <div class="bg-gray-800 p-6 rounded-lg border border-gray-700 shadow-xl hidden" id="tableContainer">
+            <table id="leaderboardTable" class="display w-full text-sm text-left text-gray-300">
+                <thead>
+                    <tr>
+                        <th>TF</th>
+                        <th>Mode</th>
+                        <th>Target</th>
+                        <th>Base Cartridge</th>
+                        <th>Count</th>
+                        <th>Full Strategy Combination</th>
+                        <th>Score</th>
+                        <th>Trades</th>
+                        <th class="hidden-col">SearchTokens</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        let table;
+
+        document.getElementById('mdFileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                parseMarkdown(e.target.result);
+            };
+            reader.readAsText(file);
+        });
+
+        function parseMarkdown(md) {
+            const lines = md.split('\n');
+            const data = [];
+            let currentTimeframe = 'Unknown';
+            let currentHeaders = [];
+            
+            const timeframes = new Set();
+            const bases = new Set();
+            const allCartridges = new Set();
+            const modes = new Set();
+
+            lines.forEach(line => {
+                if (line.startsWith('### Timeframe:')) {
+                    currentTimeframe = line.replace('### Timeframe:', '').trim();
+                }
+
+                if (line.startsWith('|') && !line.includes('---')) {
+                    const parts = markdownCells(line);
+                    
+                    if (isHeaderRow(parts)) {
+                        currentHeaders = parts;
+                        return;
+                    }
+
+                    if (currentHeaders.length > 0) {
+                        const row = normalizeMarkdownRow(currentHeaders, parts, currentTimeframe);
+                        if (!row) { return; }
+
+                        data.push(row);
+
+                        timeframes.add(row.tf);
+                        bases.add(row.base);
+                        modes.add(row.mode);
+                        row.cartridges.forEach(c => allCartridges.add(c));
+                    }
+                }
+            });
+
+            populateDropdowns('filterTimeframe', timeframes);
+            populateDropdowns('filterBase', bases);
+            populateDropdowns('filterContains', allCartridges);
+            populateDropdowns('filterMode', modes);
+            renderTable(data);
+        }
+
+        function markdownCells(line) {
+            const cells = line.split('|').map(p => p.trim());
+            if (cells[0] === '') { cells.shift(); }
+            if (cells[cells.length - 1] === '') { cells.pop(); }
+            return cells;
+        }
+
+        function isHeaderRow(parts) {
+            return parts.includes('Mode') && parts.includes('Strategy');
+        }
+
+        function rowObject(headers, parts) {
+            const row = {};
+            headers.forEach((header, index) => {
+                row[header] = parts[index] || '';
+            });
+            return row;
+        }
+
+        function normalizeMarkdownRow(headers, parts, currentTimeframe) {
+            const row = rowObject(headers, parts);
+
+            let tf = row['Timeframe'] || currentTimeframe;
+            let mode = row['Mode'];
+            let strategy = row['Strategy'];
+            let target = row['Target'];
+            let score = parseFloat(row['Score']);
+            let trades = parseInt(row['Trades']);
+
+            if (headers.includes('Profit Factor')) {
+                const stage = row['Stage'] || 'WFO';
+                const train = row['Train Window'] || 'unknown';
+                const test = row['Test Window'] || 'unknown';
+                const pnl = row['Total PnL'] || '0.000000';
+                const update = row['Update'] || inferUpdateMarker(row['Source File']);
+                const updateText = update ? ` | ${update}` : '';
+
+                target = `${stage}${updateText} | Train ${train} | Test ${test} | PnL ${pnl}`;
+                score = parseFloat(row['Profit Factor']);
+                trades = parseInt(row['Total Trades']);
+            }
+
+            if (!mode || !strategy || Number.isNaN(score)) {
+                return null;
+            }
+
+            if (Number.isNaN(trades)) {
+                trades = 0;
+            }
+
+            const cartridges = extractCartridges(strategy);
+            const count = cartridges.length;
+            const searchTokens = ',' + cartridges.join(',') + ',';
+            const base = cartridges[0] || strategy;
+
+            return {
+                tf: tf,
+                mode: mode,
+                target: target || '',
+                base: base,
+                count: count,
+                strategy: strategy,
+                score: score,
+                trades: trades,
+                searchTokens: searchTokens,
+                cartridges: cartridges
+            };
+        }
+
+        function extractCartridges(strategy) {
+            const cartridges = strategy.match(/[A-Za-z0-9]+(?:_[A-Za-z0-9]+)*?_(Regime|Slope|Momentum|24h)/g);
+            return cartridges && cartridges.length > 0 ? cartridges : [strategy];
+        }
+
+        function inferUpdateMarker(sourceFile) {
+            const source = (sourceFile || '').toLowerCase();
+            if (source.includes('pre_update')) { return 'Pre Update'; }
+            if (source.includes('post_update')) { return 'Post Update'; }
+            return '';
+        }
+
+        function populateDropdowns(id, set) {
+            const select = document.getElementById(id);
+            select.innerHTML = select.options[0].outerHTML; 
+            Array.from(set).sort().forEach(item => {
+                select.innerHTML += `<option value="${item}">${item}</option>`;
+            });
+        }
+
+        function renderTable(data) {
+            if (table) { table.destroy(); }
+
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+
+            data.forEach(row => {
+                const scoreColor = row.score > 1.8 ? 'text-green-400 font-bold' : 'text-gray-300';
+                const tradeColor = row.trades < 100 ? 'text-red-400' : 'text-gray-300';
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="font-mono text-gray-400">${row.tf}</td>
+                        <td><span class="bg-gray-700 px-2 py-1 rounded text-xs">${row.mode}</span></td>
+                        <td><span class="text-xs text-purple-400 font-semibold">${row.target}</span></td>
+                        <td class="font-semibold text-blue-400">${row.base}</td>
+                        <td class="text-center"><span class="bg-blue-900 text-blue-200 px-2 py-1 rounded-full text-xs">${row.count}</span></td>
+                        <td class="font-mono text-xs">${row.strategy.replace(/_/g, '_<wbr>')}</td>
+                        <td class="${scoreColor}">${row.score.toFixed(4)}</td>
+                        <td class="${tradeColor}">${row.trades}</td>
+                        <td class="hidden-col">${row.searchTokens}</td>
+                    </tr>
+                `;
+            });
+
+            document.getElementById('filterControls').classList.remove('hidden');
+            document.getElementById('tableContainer').classList.remove('hidden');
+
+            table = $('#leaderboardTable').DataTable({
+                pageLength: 50,
+                order: [[6, 'desc']], 
+                columnDefs: [
+                    { targets: [8], visible: false, searchable: true } 
+                ],
+                language: {
+                    search: "Quick Search:",
+                    lengthMenu: "Show _MENU_ runs per page"
+                }
+            });
+
+            $('#filterTimeframe').on('change', function() { table.column(0).search(this.value).draw(); });
+            $('#filterMode').on('change', function() { table.column(1).search(this.value).draw(); });
+            $('#filterCount').on('change', function() { 
+                const val = $.fn.dataTable.util.escapeRegex(this.value);
+                table.column(4).search(val ? '^' + val + '$' : '', true, false).draw(); 
+            });
+            
+            // EXACT MATCH FOR BASE CARTRIDGE
+            $('#filterBase').on('change', function() { 
+                const val = $.fn.dataTable.util.escapeRegex(this.value);
+                table.column(3).search(val ? '^' + val + '$' : '', true, false).draw(); 
+            });
+
+            // BOUNDED SEARCH FOR CONTAINS CARTRIDGE
+            $('#filterContains').on('change', function() { 
+                const val = this.value;
+                table.column(8).search(val ? ',' + $.fn.dataTable.util.escapeRegex(val) + ',' : '', true, false).draw(); 
+            });
+
+            $.fn.dataTable.ext.search = []; 
+            $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+                const hideMagRatio = $('#filterMagRatio').is(':checked');
+                const targetText = data[2] || ""; 
+                
+                if (hideMagRatio && targetText.includes('Mag Ratio')) { return false; }
+                return true; 
+            });
+
+            $('#filterMagRatio').on('change', function() { table.draw(); });
+            table.draw();
+        }
+    </script>
+</body>
+</html>
