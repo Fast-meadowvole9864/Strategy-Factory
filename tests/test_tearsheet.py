@@ -12,7 +12,7 @@ def test_tearsheet_creation_and_saving(tmp_path):
     generator = TearsheetGenerator(cartridge_name, base_dir=base_dir)
     
     # Verify directory was created dynamically
-    expected_dir = os.path.join(base_dir, 'reports', cartridge_name)
+    expected_dir = os.path.join(base_dir, 'reports', cartridge_name, '15m')
     assert os.path.exists(expected_dir)
     assert os.path.isdir(expected_dir)
     

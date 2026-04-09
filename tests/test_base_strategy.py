@@ -1,7 +1,7 @@
 import pytest
 import pandas as pd
 import numpy as np
-from typing import Literal
+from typing import Any, Dict, Literal
 from strategies.base_strategy import BaseStrategy
 
 # --- Mock Implementations for Testing ---
@@ -14,6 +14,10 @@ class MockDirectionalStrategy(BaseStrategy):
     @property
     def type(self) -> Literal["Directional", "Magnitude"]:
         return "Directional"
+
+    @property
+    def param_space(self) -> Dict[str, Dict[str, Any]]:
+        return {}
 
     def generate_long_signal(self) -> pd.Series:
         # Long when close > open
@@ -34,6 +38,10 @@ class MockMagnitudeStrategy(BaseStrategy):
     @property
     def type(self) -> Literal["Directional", "Magnitude"]:
         return "Magnitude"
+
+    @property
+    def param_space(self) -> Dict[str, Dict[str, Any]]:
+        return {"threshold": {"type": "int", "min": 1, "max": 5000}}
 
     def generate_long_signal(self) -> pd.Series:
         return pd.Series(0, index=self.df.index)

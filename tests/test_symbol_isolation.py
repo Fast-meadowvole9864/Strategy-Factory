@@ -3,7 +3,6 @@ import pandas as pd
 
 from strategies.adx_regime import ADXRegime
 from strategies.ema_150_slope import EMA150Slope
-from strategies.r2_regime import R2Regime
 
 
 def create_symbol_frame(symbol: str, close_values: np.ndarray) -> pd.DataFrame:
@@ -50,18 +49,6 @@ def test_adx_regime_warmup_resets_per_symbol():
     """ADX should warm up independently for each symbol slice."""
     df = create_isolation_df(btc_rows=40, eth_rows=10)
     strategy = ADXRegime(df, params={"adx_length": 5, "adx_threshold": 10})
-
-    results = strategy.run()
-    eth_signal = results.loc[df["symbol"] == "eth", "Signal_Magnitude"].reset_index(drop=True)
-
-    assert eth_signal.iloc[:4].eq(0).all()
-    assert eth_signal.iloc[4] == 1
-
-
-def test_r2_regime_warmup_resets_per_symbol():
-    """R2 windows should restart on each symbol instead of crossing asset boundaries."""
-    df = create_isolation_df(btc_rows=40, eth_rows=10)
-    strategy = R2Regime(df, params={"r2_length": 5, "r2_threshold": 0.5})
 
     results = strategy.run()
     eth_signal = results.loc[df["symbol"] == "eth", "Signal_Magnitude"].reset_index(drop=True)

@@ -1,0 +1,48 @@
+[build-system]
+requires = ["setuptools>=82"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "quant-engine-public-core"
+version = "0.1.0"
+description = "A modular quantitative research engine focused on walk-forward optimization, holdouts, and permutation testing."
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+license = { file = "LICENSE" }
+keywords = ["quant", "backtesting", "walk-forward", "permutation-testing", "trading"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Financial and Insurance Industry",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Office/Business :: Financial",
+    "Topic :: Scientific/Engineering",
+]
+dependencies = [
+    "polars==1.39.3",
+    "pandas==3.0.2",
+    "pandas-ta==0.4.71b0",
+    "pyarrow==23.0.1",
+    "numba==0.61.2",
+    "optuna==4.8.0",
+    "pybit==5.14.0",
+    "numpy==2.2.6",
+    "matplotlib==3.10.8",
+    "seaborn==0.13.2",
+    "pytest==9.0.2",
+    "tqdm==4.67.3",
+    "ccxt==4.5.46",
+    "statsmodels==0.14.6",
+    "tabulate==0.10.0",
+    "joblib==1.5.3",
+]
+
+[tool.setuptools]
+py-modules = ["main"]
+
+[tool.setuptools.packages.find]
+include = ["engine*", "strategies*", "scripts*"]
+namespaces = true

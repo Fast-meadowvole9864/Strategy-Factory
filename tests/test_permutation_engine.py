@@ -29,6 +29,7 @@ class MockCartridge(BaseStrategy):
 def test_permutation_synthetic_data_generation():
     # Construct a small mock DataFrame to test exact math logic
     df = pl.DataFrame({
+        "symbol": ["btc", "btc", "btc"],
         "close": [100.0, 105.0, 102.0],
         "Gap": [0.0, np.log(101.0) - np.log(100.0), np.log(104.0) - np.log(105.0)],
         "Move_High": [0.0, np.log(106.0) - np.log(101.0), np.log(105.0) - np.log(104.0)],
@@ -43,22 +44,22 @@ def test_permutation_synthetic_data_generation():
     assert len(synth_df) == len(df)
     
     # Verify all arrays are present
-    assert "Open" in synth_df.columns
-    assert "High" in synth_df.columns
-    assert "Low" in synth_df.columns
-    assert "Close" in synth_df.columns
+    assert "open" in synth_df.columns
+    assert "high" in synth_df.columns
+    assert "low" in synth_df.columns
+    assert "close" in synth_df.columns
     assert "Log_Return" in synth_df.columns
     
     # The first element's close log should match the initial close log + the first log return
     expected_first_close = df["close"][0] * np.exp(synth_df["Log_Return"][0])
-    assert abs(synth_df["Close"][0] - expected_first_close) < 1e-6
+    assert abs(synth_df["close"][0] - expected_first_close) < 1e-6
 
 def test_permutation_engine_run(monkeypatch):
     """
     Mock OptunaOptimizer.run to return a static value and avoid actually running Optuna 3 * 10 times.
     Also tests the Benjamini-Hochberg FDR correction doesn't crash.
     """
-    def mock_run(self):
+    def mock_run(self, *args, **kwargs):
         # We just return a dummy metric. 
         # For permutation paths let's return a random uniform to simulate synthetic distribution
         metric = np.random.uniform(0.5, 1.5)
@@ -68,6 +69,7 @@ def test_permutation_engine_run(monkeypatch):
     monkeypatch.setattr("engine.permutation_engine.OptunaOptimizer.run", mock_run)
     
     df = pl.DataFrame({
+        "symbol": ["btc", "btc", "btc"],
         "close": [100.0, 105.0, 102.0],
         "Gap": [0.0, 0.01, -0.01],
         "Move_High": [0.0, 0.02, 0.02],

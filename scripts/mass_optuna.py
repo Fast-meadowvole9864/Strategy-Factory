@@ -16,12 +16,14 @@ def get_available_cartridges():
 
 def main():
     parser = argparse.ArgumentParser(description="Mass Optuna Runner")
-    parser.add_argument("--base", nargs='+', required=True, help="Base cartridge(s) to ALWAYS include (e.g., r2_regime)")
+    parser.add_argument("--base", nargs='+', required=True, help="Base cartridge(s) to always include (e.g., ema_slope)")
     parser.add_argument("--combine", type=int, default=1, choices=[1, 2], help="Number of additional cartridges to combine with the base (default: 1)")
     parser.add_argument("--pool", nargs='+', help="Specific cartridges to draw from for combinations. If omitted, uses all available in strategies folder.")
     parser.add_argument("--trials", type=int, default=300, help="Number of Optuna trials per run (default: 300)")
     
     args = parser.parse_args()
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    main_path = os.path.join(base_dir, "main.py")
 
     pool = args.pool if args.pool else get_available_cartridges()
     
@@ -64,7 +66,7 @@ def main():
                 cartridges = args.base + list(combo)
                 
                 cmd = [
-                    sys.executable, "main.py",
+                    sys.executable, main_path,
                     "--cartridge"
                 ] + cartridges + [
                     "--stage1-optuna",
@@ -79,7 +81,7 @@ def main():
                 print(f"\n>>> [{run_count}/{total_runs}] EXECUTING: {cmd_str}")
                 
                 try:
-                    subprocess.run(cmd, check=True)
+                    subprocess.run(cmd, check=True, cwd=base_dir)
                 except subprocess.CalledProcessError as e:
                     print(f"!!! Error executing run {run_count}. Moving to next combination. Error: {e}")
                 except KeyboardInterrupt:

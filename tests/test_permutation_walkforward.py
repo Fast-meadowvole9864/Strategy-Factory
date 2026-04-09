@@ -40,6 +40,7 @@ def test_permutation_walkforward_preservation():
     move_lows = np.zeros(n_rows)
     
     df = pl.DataFrame({
+        "symbol": ["btc"] * n_rows,
         "close": closes,
         "Gap": gaps,
         "Move_High": move_highs,
@@ -56,10 +57,10 @@ def test_permutation_walkforward_preservation():
     synth_head = synth_df.head(start_index)
     
     # Check close match
-    assert np.allclose(original_head["close"].to_numpy(), synth_head["Close"].to_numpy())
+    assert np.allclose(original_head["close"].to_numpy(), synth_head["close"].to_numpy())
     
     # Check the tail does NOT match (proving shuffling happened)
     original_tail = df.tail(n_rows - start_index)
     synth_tail = synth_df.tail(n_rows - start_index)
     
-    assert not np.allclose(original_tail["close"].to_numpy(), synth_tail["Close"].to_numpy())
+    assert not np.allclose(original_tail["close"].to_numpy(), synth_tail["close"].to_numpy())

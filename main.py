@@ -39,6 +39,8 @@ logger = logging.getLogger(__name__)
 VAULT_1 = 'Vault_1_InSample'
 VAULT_2 = 'Vault_2_OOS'
 VAULT_3 = 'Vault_3_Holdout'
+PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
+REPORTS_ROOT = os.path.join(PROJECT_ROOT, "reports")
 
 COINS_FILTER = None
 DEFAULT_WFO_WINDOWS = {
@@ -207,7 +209,7 @@ def main():
 
     # Instantiate dummy to get the name for the report directory
     dummy_cart = cartridge_class(pl.DataFrame().to_pandas())
-    report_dir = os.path.join("reports", dummy_cart.name, args.timeframe)
+    report_dir = os.path.join(REPORTS_ROOT, dummy_cart.name, args.timeframe)
     
     if dummy_cart.type == "Directional":
         params_file = os.path.join(report_dir, f'stage1_{args.mode}_optimal_params_{args.target.lower()}.json')
