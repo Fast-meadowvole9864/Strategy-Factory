@@ -4,6 +4,8 @@ Strategy Factory Public Core is a modular quantitative research engine focused o
 
 This public repo is meant to teach and demonstrate the methodology and architecture. It does not include private research outputs, private data, or private strategy families.
 
+This repository is shared as a public reference snapshot of the core logic. I may not merge feature PRs, and active experimentation continues elsewhere.
+
 ## What This Project Does
 
 The engine pushes a strategy through a staged research pipeline:
